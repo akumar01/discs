@@ -28,10 +28,16 @@ class DoubleWell(abstractmodel.AbstractModel):
 
     def __init__(self, config:ml_collections.ConfigDict):
 
-        self.dim = config.dim
-        self.range = config.range
-        self.temp = config.temp
-        self.offset = config.offset
+        if hasattr(config, 'model'):
+            self.dim = config.model.dim
+            self.dim = config.model.range
+            self.temp = config.model.temp
+            self.offset = config.model.offset
+        else:
+            self.dim = config.dim
+            self.range = config.range
+            self.temp = config.temp
+            self.offset = config.offset
 
     def make_init_params(self, rnd):
         params = {}
@@ -40,8 +46,8 @@ class DoubleWell(abstractmodel.AbstractModel):
     
     def get_init_samples(self, rng, num_samples):
         # Draw random vector with dim uniformly over [-range, range]
-        x0 = jax.random.randint(rng, (num_samples,) + self.dim, -self.range, self.range)
-        return x0
+        x0 = jax.random.randint(rng, (num_samples,) + (self.dim,), -self.range, self.range)
+        return x0.astype(float)
 
     def forward(self, params, x):
         # Assume x has shape (n_samples, dim)
@@ -50,15 +56,19 @@ class DoubleWell(abstractmodel.AbstractModel):
         temp = params[0]
         offset = params[1]
         
-        H = jnp.power(jnp.tensordot(x, x, axes=(1, 1)) - offset, 2)
+        H = jnp.power(jnp.einsum('ij,ij->i', x, x) - offset, 2)
         return H
     
     def map(self, x):
         # Fix this indexing
-        return jnp.tile(jnp.arange(-self.range, self.range), (x.shape[0], 1))[:, ]
+        states = jnp.tile(jnp.arange(-self.range, self.range + 1), (x.shape[1], 1))
+        #samples = jnp.array([x.shape[1]
+        #samples = jnp.array([states[idx][]])
+        return jnp.tile(jnp.arange(-self.range, self.range), (x.shape[0], 1))
     
     def get_value_and_grad(self, params, x):
         # Map x to integer
+        pdb.set_trace()
         x = self.map(x)
         x = x.astype(jnp.float32) # int tensor is not differentiable
         def fn(z):
@@ -66,6 +76,7 @@ class DoubleWell(abstractmodel.AbstractModel):
             return jnp.sum(H)
         
         val, grad = jax.value_and_grad(fn)(x)
+        pdb.set_trace()
         return val, grad
 
 def build_model(config):
