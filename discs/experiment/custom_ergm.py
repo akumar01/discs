@@ -18,10 +18,14 @@ from discs.samplers.gibbs import GibbsSampler
 from discs.common import configs as common_configs
 from discs.samplers.configs import dlmc_config, gibbs_config, randomwalk_config, gwg_config
 
+from discs.evaluators.ess_eval import ESSevaluator
 
-burnin = 10   #10000
-n_chains = 3
-chain_length = 100 #int(1e5) 
+from copy import deepcopy
+
+
+burnin = 1000  #10000
+n_chains = 1
+chain_length = 10000 #int(1e5) 
 
 
 # ERGM configuration
@@ -60,8 +64,17 @@ for s in tqdm(samplers):
     sampler_state = sampler.make_init_state(sampler_init_rng)
     samples = []
     for idx in tqdm(range(burnin + chain_length)):
+        #x_old = deepcopy(x)
         x, sampler_state, _ = sampler.step(model, step_rng, x, model_param, sampler_state)
         if idx > burnin:
             samples.append(x)
+            #print(x-x_old)
+            
+    np.save("samples.npy", samples)
 
+    
 # Calculate effective sample size
+rnd_ess = model_rng
+esseval = ESSevaluator(config)
+ess,std = esseval._get_ess(rnd_ess, jnp.array(samples))
+print(ess,std)
