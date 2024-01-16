@@ -82,7 +82,9 @@ class ERGM(abstractmodel.AbstractModel):
         return A0
     
     def forward(self, params, A):
-        #log likelihood of the degree-corrected SBM with mutual connection constraints
+        #energy fucntion (NOT log likelihood) of the degree-corrected SBM with mutual connection constraints
+        if len(A.shape) >2: # b/c some mysterious block of code is making chains
+            A = A[0]
         N = self.shape[0]
         
         alpha = params[0]
@@ -101,26 +103,23 @@ class ERGM(abstractmodel.AbstractModel):
         # ignore weights
         #Q = torch.ones((N,N))
         #R = torch.ones((N,N))
-        consider_mutual = True
-
-        if consider_mutual:
-            C = jnp.log(2*jnp.ones((N,N)))
-            UV2 = jnp.concatenate((-U,-U-V,C)).reshape(3,N,N)  
-            logZ = jax.scipy.special.logsumexp(UV2,axis=0) 
-        else:
-            C = jnp.zeros((N,N))
-            UC = jnp.concatenate((-U,C)).reshape(2,N,N)  
-            logZ = jax.scipy.special.logsumexp(UC,axis=0) 
-
-
-
-        logD = -jnp.multiply(A,U) - logZ  - jnp.multiply(jnp.multiply(A,A.T), V)
-          #- torch.multiply(torch.tensordot(mu,w_masks,axes=([0], [0])),S)    
-    
-        off_diag_mask = jnp.ones((N,N))-jnp.eye(N)
         
-        L = jnp.sum(jnp.multiply(logD, off_diag_mask))
+        #consider_mutual = True
+        #if consider_mutual:
+            #C = jnp.log(2*jnp.ones((N,N)))
+            #UV2 = jnp.concatenate((-U,-U-V,C)).reshape(3,N,N)  
+            #logZ = jax.scipy.special.logsumexp(UV2,axis=0) 
+        #else:
+            #C = jnp.zeros((N,N))
+            #UC = jnp.concatenate((-U,C)).reshape(2,N,N)  
+            #logZ = jax.scipy.special.logsumexp(UC,axis=0) 
 
+        H = -jnp.multiply(A,U) - jnp.multiply(jnp.multiply(A,A.T), V)
+          #- torch.multiply(torch.tensordot(mu,w_masks,axes=([0], [0])),S)- logZ  
+        
+        off_diag_mask = jnp.ones((N,N))-jnp.eye(N)    
+        L = jnp.sum(jnp.multiply(H, off_diag_mask))
+        #print(L)
         return L
 
 
