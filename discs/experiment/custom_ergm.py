@@ -23,9 +23,9 @@ from discs.evaluators.ess_eval import ESSevaluator
 from copy import deepcopy
 
 
-burnin = 1000  #10000
-n_chains = 1
-chain_length = 10000 #int(1e5) 
+burnin = 1  #10000
+n_chains = 3
+chain_length = 10 #int(1e5) 
 
 
 # ERGM configuration
@@ -71,10 +71,13 @@ for s in tqdm(samplers):
             #print(x-x_old)
             
     np.save("samples.npy", samples)
-
     
-# Calculate effective sample size
-rnd_ess = model_rng
-esseval = ESSevaluator(config)
-ess,std = esseval._get_ess(rnd_ess, jnp.array(samples))
-print(ess,std)
+    # do hamming distance of the samples here or post-hoc
+    
+
+    if False:
+        # Calculate effective sample size
+        rnd_ess = model_rng
+        esseval = ESSevaluator(config)
+        ess,std = esseval._get_ess(rnd_ess, jnp.array(samples))
+        print(ess,std)

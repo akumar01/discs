@@ -64,6 +64,7 @@ class Ising(abstractmodel.AbstractModel):
     message = message / 2 + w_b
     loglike = (2 * x - 1) * message
     loglike = loglike.reshape(x.shape[0], -1)
+    print(-jnp.sum(loglike, axis=-1))
     return -jnp.sum(loglike, axis=-1)
 
   def get_value_and_grad(self, params, x):

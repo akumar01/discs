@@ -19,9 +19,9 @@ from discs.common import configs as common_configs
 from discs.samplers.configs import dlmc_config, gibbs_config, randomwalk_config, gwg_config
 
 
-burnin = 10000
-n_chains = 3
-chain_length = int(1e5)
+burnin = 1
+n_chains = 2
+chain_length = 10
 
 # Double Well Configuration
 # model_class = DoubleWell
@@ -47,7 +47,7 @@ config.model.update(model_config)
 
 # Samplers to test
 #samplers = ['dlmc', 'gwg', 'randomwalk', 'gibbs']
-samplers = ['gibbs']
+samplers = ['dlmc']
 sampler_dict = {'dlmc':CategoricalDLMC, 
                 'gwg': CategoricalGWGSampler,
                 'randomwalk':RWSampler,

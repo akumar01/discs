@@ -75,7 +75,7 @@ class ERGM(abstractmodel.AbstractModel):
         
         A0 = jax.random.bernoulli(
             rnd,
-            shape= self.shape,
+            shape= (num_samples,) + self.shape,
         ).astype(jnp.int32)
 
         #A0 = self.A0.astype(jnp.int32)
@@ -83,8 +83,7 @@ class ERGM(abstractmodel.AbstractModel):
     
     def forward(self, params, A):
         #energy fucntion (NOT log likelihood) of the degree-corrected SBM with mutual connection constraints
-        if len(A.shape) >2: # b/c some mysterious block of code is making chains
-            A = A[0]
+  
         N = self.shape[0]
         
         alpha = params[0]
@@ -114,13 +113,15 @@ class ERGM(abstractmodel.AbstractModel):
             #UC = jnp.concatenate((-U,C)).reshape(2,N,N)  
             #logZ = jax.scipy.special.logsumexp(UC,axis=0) 
 
-        H = -jnp.multiply(A,U) - jnp.multiply(jnp.multiply(A,A.T), V)
+        H = -jnp.multiply(A,U) - jnp.multiply(jnp.multiply(A, jnp.transpose(A,(0,2,1))), V)
           #- torch.multiply(torch.tensordot(mu,w_masks,axes=([0], [0])),S)- logZ  
         
-        off_diag_mask = jnp.ones((N,N))-jnp.eye(N)    
-        L = jnp.sum(jnp.multiply(H, off_diag_mask))
-        #print(L)
-        return L
+        off_diag_mask = jnp.ones((N,N))-jnp.eye(N)  
+        L = jnp.multiply(H, off_diag_mask)
+       
+        L = L.reshape(A.shape[0], -1)
+        L = jnp.sum(L, axis=-1)
+        return L    
 
 
     def get_value_and_grad(self, params, x):
