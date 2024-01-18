@@ -32,6 +32,7 @@ class GibbsWithGradSampler(locallybalanced.LocallyBalancedSampler):
     ll_y, grad_y = model.get_value_and_grad(model_param, y)
     dist_y = self.get_dist_at(y, grad_y, x_mask)
     ll_y2x = self.get_ll_onestep(dist_y, aux=aux, src_to_dst='y2x')
+    # Is this a MH correction?
     log_acc = ll_y + ll_y2x - ll_x - ll_x2y
     new_x, new_state = self.select_sample(rng_acceptance, log_acc, x, y, state)
 

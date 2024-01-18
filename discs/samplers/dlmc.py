@@ -174,7 +174,6 @@ class CategoricalDLMC(DLMCSampler):
 
   def sample_from_proposal(self, rng, x, dist_x):
     # Need to squash along last axis if we have for example a 2D state
-    pdb.set_trace()
     dist_x = jnp.reshape(dist_x, (x.shape[0], -1))
     y = jax.random.categorical(rng, logits=dist_x)
     y = jax.nn.one_hot(y, self.num_categories, dtype=jnp.float32)
