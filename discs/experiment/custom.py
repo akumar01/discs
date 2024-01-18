@@ -67,7 +67,6 @@ if __name__ == '__main__':
     init_rng, step_rng, model_rng = jax.random.split(rnd, 3)
     ess = {}
     for s in tqdm(samplers):
-
         # Load sampler configuration
         sampler_config = sampler_config_dict[s].get_config()
         sample_init_rng, sampler_init_rng = jax.random.split(init_rng, 2)

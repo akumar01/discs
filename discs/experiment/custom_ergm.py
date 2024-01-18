@@ -38,7 +38,7 @@ config.model.update(model_config)
 
 # Samplers to test
 #samplers = ['dlmc', 'gwg', 'randomwalk', 'gibbs']
-samplers = ['gibbs']
+samplers = ['gibbs', 'randomwalk', 'dlmc', 'gwg']
 sampler_dict = {'dlmc':CategoricalDLMC, 
                 'gwg': CategoricalGWGSampler,
                 'randomwalk':RWSampler,
@@ -65,7 +65,8 @@ for s in tqdm(samplers):
     samples = []
     for idx in tqdm(range(burnin + chain_length)):
         #x_old = deepcopy(x)
-        x, sampler_state, _ = sampler.step(model, step_rng, x, model_param, sampler_state)
+        step_rng_, step_rng = jax.random.split(step_rng, 2)
+        x, sampler_state, _ = sampler.step(model, step_rng_, x, model_param, sampler_state)
         if idx > burnin:
             samples.append(x)
             #print(x-x_old)
