@@ -143,7 +143,6 @@ class BinaryDLMC(DLMCSampler):
         axis=range(1, dist.ndim),
     )
 
-
 class CategoricalDLMC(DLMCSampler):
   """DLMC sampler in categorical case."""
 
